@@ -26,7 +26,7 @@ public class WebSecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
 	{
-		http.csrf(csrf->csrf.disable()).authorizeHttpRequests(auth ->auth.requestMatchers("/register","/login","/verify","/images/**").permitAll().anyRequest()
+		http.csrf(csrf->csrf.disable()).authorizeHttpRequests(auth ->auth.requestMatchers("/register","/login","/verify","/images/**","/refresh").permitAll().anyRequest()
 				.authenticated()).exceptionHandling(ex->ex.authenticationEntryPoint(authenticationEntryPoint))
         .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);

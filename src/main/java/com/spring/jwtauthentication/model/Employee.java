@@ -2,11 +2,13 @@ package com.spring.jwtauthentication.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Email;
@@ -58,6 +60,10 @@ public class Employee
     private String password;
 
 	private String imagePath;
+	
+	@JsonIgnore
+	@OneToOne(mappedBy = "employee",cascade = CascadeType.ALL)
+	private RefreshToken refreshToken;
 	
 	public int getId() 
 	{
@@ -116,26 +122,13 @@ public class Employee
 	public void setImagePath(String imagePath) {
 		this.imagePath = imagePath;
 	}
+	
+	public RefreshToken getRefreshToken() {
+		return refreshToken;
+	}
 
-	public Employee(
-			@NotEmpty(message = "First name cannot be empty") @Size(min = 2, max = 10, message = "First name should be between 2 - 10 characters") @Pattern(regexp = "^[A-Za-z]+$", message = "First name can only contains alphabets") String fname,
-			@NotEmpty(message = "Last name cannot be empty") @Size(min = 3, max = 10, message = "Last name should be between 3 - 10 characters") @Pattern(regexp = "^[A-Za-z]+$", message = "Last name can only contains alphabets") String lname,
-			@NotEmpty(message = "Phone cannot be empty") @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits") String phone,
-			String role,
-			@NotEmpty(message = "Email cannot be empty") @Email(message = "Invalid email address") String email,
-			int isVerified,
-			@NotEmpty(message = "Password cannot be empty") @Size(min = 6, max = 60, message = "Password must be minimum 8 characters") String password,
-			String imagePath) 
-	{
-		super();
-		this.fname = fname;
-		this.lname = lname;
-		this.phone = phone;
-		this.role = role;
-		this.email = email;
-		this.isVerified = isVerified;
-		this.password = password;
-		this.imagePath = imagePath;
+	public void setRefreshToken(RefreshToken refreshToken) {
+		this.refreshToken = refreshToken;
 	}
 
 	public int getIsVerified() {
@@ -152,6 +145,27 @@ public class Employee
 
 	public void setRole(String role) {
 		this.role = role;
+	}
+
+	public Employee(
+			@NotEmpty(message = "First name cannot be empty") @Size(min = 2, max = 10, message = "First name should be between 2 - 10 characters") @Pattern(regexp = "^[A-Za-z]+$", message = "First name can only contains alphabets") String fname,
+			@NotEmpty(message = "Last name cannot be empty") @Size(min = 3, max = 10, message = "Last name should be between 3 - 10 characters") @Pattern(regexp = "^[A-Za-z]+$", message = "Last name can only contains alphabets") String lname,
+			@NotEmpty(message = "Phone cannot be empty") @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be 10 digits") String phone,
+			String role,
+			@NotEmpty(message = "Email cannot be empty") @Email(message = "Invalid email address") String email,
+			int isVerified,
+			@NotEmpty(message = "Password cannot be empty") @Size(min = 6, max = 60, message = "Password must be minimum 8 characters") String password,
+			String imagePath, RefreshToken refreshToken) {
+		super();
+		this.fname = fname;
+		this.lname = lname;
+		this.phone = phone;
+		this.role = role;
+		this.email = email;
+		this.isVerified = isVerified;
+		this.password = password;
+		this.imagePath = imagePath;
+		this.refreshToken = refreshToken;
 	}
 
 	public Employee()

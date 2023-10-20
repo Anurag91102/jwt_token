@@ -6,7 +6,6 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;	
@@ -22,19 +21,20 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.spring.jwtauthentication.config.CustomUserDetailsService;
 import com.spring.jwtauthentication.config.JwtTokenUtil;
 import com.spring.jwtauthentication.model.Employee;
 import com.spring.jwtauthentication.model.EmployeeDTO;
+import com.spring.jwtauthentication.model.RefreshToken;
 import com.spring.jwtauthentication.payloads.JwtReponse;
 import com.spring.jwtauthentication.payloads.JwtRequest;
 import com.spring.jwtauthentication.payloads.Response;
+import com.spring.jwtauthentication.repo.RefreshTokenRepo;
 import com.spring.jwtauthentication.service.EmailService;
 import com.spring.jwtauthentication.service.EmployeeService;
+import com.spring.jwtauthentication.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-
 import jakarta.validation.Valid;
 
 @RestController
@@ -42,6 +42,9 @@ public class HomeController
 {
 	@Value("${uploadDir}")
 	private String uploadDirectory;
+	
+	@Autowired
+	private RefreshTokenService refreshTokenService;
 	
 	@Autowired
 	private JwtTokenUtil jwtTokenUtil;
@@ -119,8 +122,11 @@ public class HomeController
 			authenticate(jwtRequest.getEmail(), jwtRequest.getPassword());
 			UserDetails userDetails =  customUserDetailsService.loadUserByUsername(jwtRequest.getEmail());
 			String token = jwtTokenUtil.generateToken(userDetails);
+			System.out.println(jwtRequest.getEmail());
+			RefreshToken refreshToken = refreshTokenService.createRefreshToken(jwtRequest.getEmail());
+			
 			Employee employee = employeeService.findByEmail(jwtRequest.getEmail());
-			return ResponseEntity.ok(new JwtReponse(token,employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
+			return ResponseEntity.ok(new JwtReponse(token,refreshToken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
 		}
 		else
 		{
@@ -136,6 +142,23 @@ public class HomeController
 		return "Welcome, "+employee.getFname();
 	}
 
+	
+	@PostMapping("/refresh")
+	public ResponseEntity<?> refreshJwtToken(@RequestBody Map<String, String> requestBody)
+	{
+		String refreshToken = requestBody.get("refreshToken");
+		System.out.println(refreshToken);
+		if(refreshToken.equals("null") || refreshToken == "")
+		{
+			return ResponseEntity.ok("Please enter value for the field");
+		}
+		RefreshToken  refreshtoken = refreshTokenService.verifyRefreshToken(refreshToken);
+		Employee employee = refreshtoken.getEmployee();
+		UserDetails userDetails =  customUserDetailsService.loadUserByUsername(employee.getEmail());
+		String token = jwtTokenUtil.generateToken(userDetails);
+		return ResponseEntity.ok(new JwtReponse(token,refreshtoken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
+	}
+	
 	public void authenticate(String email,String password) throws Exception
 	{
 		UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email, password);

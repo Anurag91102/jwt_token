@@ -7,6 +7,8 @@ public class JwtReponse {
 
 	private String token;
 
+	private String refreshToken; 
+	
 	private String email;
 	
 	private String fname;
@@ -55,9 +57,20 @@ public class JwtReponse {
 		this.phone = phone;
 	}
 
-	public JwtReponse(String token, String email, String fname, String lname, String phone) {
+	public String getRefreshToken() {
+		return refreshToken;
+	}
+
+	public void setRefreshToken(String refreshToken) {
+		this.refreshToken = refreshToken;
+	}
+
+	
+	
+	public JwtReponse(String token, String refreshToken, String email, String fname, String lname, String phone) {
 		super();
 		this.token = token;
+		this.refreshToken = refreshToken;
 		this.email = email;
 		this.fname = fname;
 		this.lname = lname;
