@@ -1,10 +1,12 @@
 package com.spring.jwtauthentication.service;
 
 import java.util.Date;
-import java.util.Optional;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.spring.jwtauthentication.exception.TokenGetExpired;
 import com.spring.jwtauthentication.model.Employee;
 import com.spring.jwtauthentication.model.RefreshToken;
 import com.spring.jwtauthentication.repo.EmployeeRepo;
@@ -24,7 +26,7 @@ public class RefreshTokenService
 	{
 		Employee employee = employeeRepo.findByEmail(username);
 		RefreshToken existRefreshToken = employee.getRefreshToken();
-		System.out.println(existRefreshToken);
+//		System.out.println(existRefreshToken);
 		System.out.println();
 		if(existRefreshToken == null)
 		{
@@ -43,21 +45,20 @@ public class RefreshTokenService
 			refreshTokenRepo.save(existRefreshToken);
 			return existRefreshToken;
 		}
-		
-		
 	}
 	
-	public RefreshToken verifyRefreshToken(String refreshToken)
+	public RefreshToken verifyRefreshToken(String refreshToken) throws TokenGetExpired
 	{
-		Optional<RefreshToken> refreshTok = Optional.ofNullable(refreshTokenRepo.findByRefreshToken(refreshToken).orElseThrow(()-> new RuntimeException("Given Token do not exists")));
-		if(refreshTok.get().getExpiry().compareTo(new Date(System.currentTimeMillis()))<0)
-		{
-			refreshTokenRepo.delete(refreshTok.get());
-			throw new RuntimeException("Refresh Token Expired.");
+		RefreshToken refreshTok = refreshTokenRepo.findByRefreshToken(refreshToken).orElseThrow(()-> new NoSuchElementException("No Such Refresh Token found"));
+		if(refreshTok.getExpiry().compareTo(new Date(System.currentTimeMillis()))<0)
+		{  
+			refreshTokenRepo.delete(refreshTok);
+			throw new TokenGetExpired("Refresh Token Expired.");
 		}
 		else
 		{
-			return refreshTok.get();
+			return refreshTok;
 		}
 	}
+
 }

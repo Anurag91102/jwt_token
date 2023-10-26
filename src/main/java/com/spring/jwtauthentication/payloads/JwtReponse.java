@@ -5,6 +5,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtReponse {
 
+	private int success;
+	
+	private String message;
+	
 	private String token;
 
 	private String refreshToken; 
@@ -65,10 +69,41 @@ public class JwtReponse {
 		this.refreshToken = refreshToken;
 	}
 
-	
-	
-	public JwtReponse(String token, String refreshToken, String email, String fname, String lname, String phone) {
+		
+
+	@Override
+	public String toString() {
+		return "JwtReponse [success=" + success + ", message=" + message + ", token=" + token + ", refreshToken="
+				+ refreshToken + ", email=" + email + ", fname=" + fname + ", lname=" + lname + ", phone=" + phone
+				+ "]";
+	}
+
+	public int getSuccess() {
+		return success;
+	}
+
+	public void setSuccess(int success) {
+		this.success = success;
+	}
+
+	public String getMessage() {
+		return message;
+	}
+
+	public void setMessage(String message) {
+		this.message = message;
+	}
+
+	public JwtReponse() {
 		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public JwtReponse(int success, String message, String token, String refreshToken, String email, String fname,
+			String lname, String phone) {
+		super();
+		this.success = success;
+		this.message = message;
 		this.token = token;
 		this.refreshToken = refreshToken;
 		this.email = email;
@@ -77,11 +112,7 @@ public class JwtReponse {
 		this.phone = phone;
 	}
 
-	public JwtReponse() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-	
+
 	
 	
 	

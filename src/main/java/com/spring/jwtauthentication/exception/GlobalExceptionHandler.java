@@ -1,8 +1,10 @@
 package com.spring.jwtauthentication.exception;
 
 import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +12,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.spring.jwtauthentication.payloads.Response;
 
@@ -47,7 +50,25 @@ public class GlobalExceptionHandler
             errorMessage = "Phone number already exists";
         }
 		Response  response = new Response(0,errorMessage);
-        return new ResponseEntity<Response>(response,HttpStatus.OK);
+        return new ResponseEntity<Response>(response,HttpStatus.OK);	
+	}
+	
+	
+	@ExceptionHandler(NoSuchElementException.class)
+	public ResponseEntity<Response> handeNoSuchElement(NoSuchElementException ex)
+	{
+		String message = ex.getMessage();
+		Response response = new Response(0,message,new ArrayList<>());
+		return new ResponseEntity<Response>(response,HttpStatus.NOT_FOUND);
 		
 	}
+	
+	@ExceptionHandler(TokenGetExpired.class)
+	public ResponseEntity<Response> handleTokenGetExpired(TokenGetExpired ex)
+	{
+		String message = ex.getMessage();
+		Response response = new Response(0, message, new ArrayList<>());
+		return new ResponseEntity<Response>(response,HttpStatus.OK);
+	}
+
 }

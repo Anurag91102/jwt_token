@@ -30,9 +30,7 @@ public class RefreshToken
 	public void setRefreshToken(String refreshToken) {
 		this.refreshToken = refreshToken;
 	}
-
 	
-
 	public Date getExpiry() {
 		return expiry;
 	}

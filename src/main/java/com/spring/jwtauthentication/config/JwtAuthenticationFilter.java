@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
-
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
@@ -48,19 +47,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter
 			} 
 			catch (ExpiredJwtException e)
 			{
-				System.out.println("JWT Token has expired");
+				String errorMessage = "JWT Token get expired";
+				int success = 0; 
+		        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+		        response.setContentType("application/json");
+		        response.getWriter().write("{\"success\": " + success + ", \"message\": \"" + errorMessage + "\"}");
+		        return;
 			}
 			catch (SignatureException e) 
 			{
-				String errorMessage = "Bad Request Access Denied";
+				String errorMessage = "JWT Token Signature do not match";
+				int success = 0;
 		        response.setStatus(HttpStatus.UNAUTHORIZED.value());
 		        response.setContentType("application/json");
-		        response.getWriter().write("{\"error\": \"" + errorMessage + "\"}");
+		        response.getWriter().write("{\"success\": " + success + ", \"message\": \"" + errorMessage + "\"}");
 		        return;
 		    }
 			catch(Exception e)
 			{
-				System.out.println("Something went wrong");
+				String errorMessage = "Something Went Wrong";
+				int success = 0;
+		        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+		        response.setContentType("application/json");
+		        response.getWriter().write("{\"success\": " + success + ", \"message\": \"" + errorMessage + "\"}");
+		        return;
 			}
 		}
 		else

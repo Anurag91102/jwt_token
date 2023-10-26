@@ -54,7 +54,6 @@ public class Employee
 	@Column(length = 5)
 	private int isVerified;
 	
-	@JsonIgnore
 	@NotEmpty(message = "Password cannot be empty")
     @Size(min = 6, max = 60, message = "Password must be minimum 8 characters")
     private String password;
@@ -62,7 +61,7 @@ public class Employee
 	private String imagePath;
 	
 	@JsonIgnore
-	@OneToOne(mappedBy = "employee",cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "employee")
 	private RefreshToken refreshToken;
 	
 	public int getId() 

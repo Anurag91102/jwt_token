@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import com.spring.jwtauthentication.config.CustomUserDetailsService;
 import com.spring.jwtauthentication.config.JwtTokenUtil;
+import com.spring.jwtauthentication.exception.TokenGetExpired;
 import com.spring.jwtauthentication.model.Employee;
 import com.spring.jwtauthentication.model.EmployeeDTO;
 import com.spring.jwtauthentication.model.RefreshToken;
@@ -96,7 +97,8 @@ public class HomeController
 	{
 		
 		String generatedOtp = (String) session.getAttribute("generatedOtp");
-		Employee employeeDetails = (Employee) session.getAttribute("employeeDetails");			
+		Employee employeeDetails = (Employee) session.getAttribute("employeeDetails");	
+		System.out.println(generatedOtp);
 		if(requestBody.get("otp").equals(generatedOtp))
 		{
 			employeeDetails.setIsVerified(1);
@@ -117,7 +119,12 @@ public class HomeController
 	public ResponseEntity<?> login(@Valid @RequestBody JwtRequest jwtRequest) throws Exception
 	{
 		Employee employeeDetails = employeeService.findByEmail(jwtRequest.getEmail());
-		if(employeeDetails.getIsVerified() == 1)
+		if(employeeDetails==null) 
+		{
+			Response response = new Response(0,"Invalid Email or Password",new ArrayList<>());
+			return  new ResponseEntity<Response>(response,HttpStatus.OK);
+		}
+		else if(employeeDetails.getIsVerified() == 1)
 		{
 			authenticate(jwtRequest.getEmail(), jwtRequest.getPassword());
 			UserDetails userDetails =  customUserDetailsService.loadUserByUsername(jwtRequest.getEmail());
@@ -126,11 +133,11 @@ public class HomeController
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(jwtRequest.getEmail());
 			
 			Employee employee = employeeService.findByEmail(jwtRequest.getEmail());
-			return ResponseEntity.ok(new JwtReponse(token,refreshToken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
+			return ResponseEntity.ok(new JwtReponse(1,"Logged In Successfully",token,refreshToken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
 		}
 		else
 		{
-			Response response = new Response(0,"You are not verified User");
+			Response response = new Response(0,"You are not verified User",new ArrayList<>());
 			return  new ResponseEntity<Response>(response,HttpStatus.OK);
 		}
 	}
@@ -144,19 +151,19 @@ public class HomeController
 
 	
 	@PostMapping("/refresh")
-	public ResponseEntity<?> refreshJwtToken(@RequestBody Map<String, String> requestBody)
+	public ResponseEntity<?> refreshJwtToken(@RequestBody Map<String, String> requestBody) throws TokenGetExpired
 	{
 		String refreshToken = requestBody.get("refreshToken");
-		System.out.println(refreshToken);
 		if(refreshToken.equals("null") || refreshToken == "")
 		{
-			return ResponseEntity.ok("Please enter value for the field");
+			Response response = new Response(0,"Please enter value for the field",new ArrayList<>());
+			return new ResponseEntity<Response>(response,HttpStatus.OK);
 		}
 		RefreshToken  refreshtoken = refreshTokenService.verifyRefreshToken(refreshToken);
 		Employee employee = refreshtoken.getEmployee();
 		UserDetails userDetails =  customUserDetailsService.loadUserByUsername(employee.getEmail());
 		String token = jwtTokenUtil.generateToken(userDetails);
-		return ResponseEntity.ok(new JwtReponse(token,refreshtoken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
+		return ResponseEntity.ok(new JwtReponse(1,"JWT Token Generated Successfully",token,refreshtoken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
 	}
 	
 	public void authenticate(String email,String password) throws Exception
@@ -189,7 +196,7 @@ public class HomeController
 		else
 		{
 			Response response = new Response(0,"No Such Record Found",new ArrayList<>());
-			return new ResponseEntity<Response>(response,HttpStatus.OK);
+			return new ResponseEntity<Response>(response,HttpStatus.NOT_FOUND);
 		}
 	}
 	
@@ -203,7 +210,7 @@ public class HomeController
 			if (image.isEmpty()) 
 			{
 				Response response = new Response(0,"Please select an image to upload.",new ArrayList<>());
-	            return new ResponseEntity<Response>(response,HttpStatus.OK);
+	            return new ResponseEntity<Response>(response,HttpStatus.NOT_FOUND);
 	        }
 	        // Create the upload directory if it doesn't exist
 	        File uploadDir = new File(uploadDirectory);
@@ -216,14 +223,14 @@ public class HomeController
 	        if(!fileExtension.equals(".jpg") && !fileExtension.equals(".png") && !fileExtension.equals(".jpeg"))
 	        {
 	        	Response response = new Response(0, "Invalid file format. Only jpg ,png and jpeg are allowed.", new ArrayList<>());
-	        	return new ResponseEntity<Response>(response, HttpStatus.OK);
+	        	return new ResponseEntity<Response>(response, HttpStatus.BAD_REQUEST);
 	        }
 	        String timestamp = String.valueOf(System.currentTimeMillis());
 	        String newFileName = "user_"+employeeDetails.getId()+"_"+timestamp+fileExtension;
 	        String filePath = uploadDirectory + File.separator + newFileName;
+	        System.out.println(filePath);
 	        image.transferTo(new File(filePath));
 	        employeeDetails.setImagePath(newFileName);
-	        
 		}
 		if(employeeDTO.getFname() != null)
 		{
@@ -238,8 +245,9 @@ public class HomeController
 		Response response = new Response(1,"Updated Successfully",employeeDetails);
 		return new ResponseEntity<Response>(response,HttpStatus.OK);	
 	}
-	
-	//	@PostMapping("/image")
+
+//	dummy image checker
+//	@PostMapping("/image")
 //	public String imageUpload(@RequestParam("image") MultipartFile image) throws IllegalStateException, IOException
 //	{
 //		if (image.isEmpty()) 
