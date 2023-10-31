@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -131,9 +133,14 @@ public class HomeController
 			String token = jwtTokenUtil.generateToken(userDetails);
 			System.out.println(jwtRequest.getEmail());
 			RefreshToken refreshToken = refreshTokenService.createRefreshToken(jwtRequest.getEmail());
-			
 			Employee employee = employeeService.findByEmail(jwtRequest.getEmail());
-			return ResponseEntity.ok(new JwtReponse(1,"Logged In Successfully",token,refreshToken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
+			
+			 Map<String, Object> responseData = new HashMap<>();
+			 responseData.put("email", employee.getEmail());
+		     responseData.put("fname", employee.getFname());
+		     responseData.put("lname", employee.getLname());
+		     responseData.put("phone", employee.getPhone());
+			return ResponseEntity.ok(new JwtReponse(1,"Logged In Successfully",responseData,token,refreshToken.getRefreshToken()));	
 		}
 		else
 		{
@@ -154,7 +161,7 @@ public class HomeController
 	public ResponseEntity<?> refreshJwtToken(@RequestBody Map<String, String> requestBody) throws TokenGetExpired
 	{
 		String refreshToken = requestBody.get("refreshToken");
-		if(refreshToken.equals("null") || refreshToken == "")
+		if(refreshToken == null || refreshToken == "")
 		{
 			Response response = new Response(0,"Please enter value for the field",new ArrayList<>());
 			return new ResponseEntity<Response>(response,HttpStatus.OK);
@@ -163,7 +170,13 @@ public class HomeController
 		Employee employee = refreshtoken.getEmployee();
 		UserDetails userDetails =  customUserDetailsService.loadUserByUsername(employee.getEmail());
 		String token = jwtTokenUtil.generateToken(userDetails);
-		return ResponseEntity.ok(new JwtReponse(1,"JWT Token Generated Successfully",token,refreshtoken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
+		 Map<String, Object> responseData = new HashMap<>();
+		 responseData.put("email", employee.getEmail());
+	     responseData.put("fname", employee.getFname());
+	     responseData.put("lname", employee.getLname());
+	     responseData.put("phone", employee.getPhone());
+	     return ResponseEntity.ok(new JwtReponse(1,"JWT Token Generated Successfully",responseData,token,refreshtoken.getRefreshToken()));	
+//		return ResponseEntity.ok(new JwtReponse(1,"JWT Token Generated Successfully",token,refreshtoken.getRefreshToken(),employee.getEmail(),employee.getFname(),employee.getLname(),employee.getPhone()));	
 	}
 	
 	public void authenticate(String email,String password) throws Exception

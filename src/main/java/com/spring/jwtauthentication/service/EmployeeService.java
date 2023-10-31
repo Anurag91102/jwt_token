@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.spring.jwtauthentication.model.Employee;
 import com.spring.jwtauthentication.repo.EmployeeRepo;
 
@@ -27,9 +26,5 @@ public class EmployeeService
 	public Optional<Employee> findById(int id)
 	{
 		return employeeRepo.findById(id);
-	}
-	
-	
-	
-	
+	}	
 }

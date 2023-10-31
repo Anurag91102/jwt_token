@@ -8,5 +8,5 @@ import com.spring.jwtauthentication.model.Employee;
 @Repository
 public interface EmployeeRepo extends JpaRepository<Employee, Integer>
 {
-	public Employee findByEmail(String email);
+	 Employee findByEmail(String email);
 }

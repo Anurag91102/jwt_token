@@ -5,6 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -26,7 +27,7 @@ public class WebSecurityConfig {
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
 	{
-		http.csrf(csrf->csrf.disable()).authorizeHttpRequests(auth ->auth.requestMatchers("/register","/login","/verify","/images/**","/refresh").permitAll().anyRequest()
+		http.csrf(csrf->csrf.disable()).cors(Customizer.withDefaults()).authorizeHttpRequests(auth ->auth.requestMatchers("/register","/login","/verify","/images/**","/refresh").permitAll().anyRequest()
 				.authenticated()).exceptionHandling(ex->ex.authenticationEntryPoint(authenticationEntryPoint))
         .sessionManagement(session->session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -46,11 +47,11 @@ public class WebSecurityConfig {
 		return new BCryptPasswordEncoder();
 	}
 	
-	 @Bean
-	 public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception
-	 {
-		 return builder.getAuthenticationManager();
-	 }
+	@Bean
+	public AuthenticationManager authenticationManager(AuthenticationConfiguration builder) throws Exception
+	{
+		return builder.getAuthenticationManager();
+	}
 	
 	
 	@Bean
